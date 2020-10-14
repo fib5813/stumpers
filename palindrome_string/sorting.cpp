@@ -204,10 +204,9 @@ void merge_sort(std::vector<int>& in, std::vector<int>& out){
     print(out);    
 }
 
-void quick_sort(std::vector<int>& in, std::vector<int>& out){
+//sort in place
+void quick_sort(std::vector<int>& in){
     // pick pivot, place in the right position in the array, repeat for divided subarrays
-    print(in);
-    // pick pivot
     int pivot = in.back();
     std::vector<int> less, more, equal, less_out, more_out;
     for(auto& i : in){
@@ -215,28 +214,23 @@ void quick_sort(std::vector<int>& in, std::vector<int>& out){
         else if(i > pivot) more.push_back(i);
         else equal.push_back(i);
     }
-    std::cout << "------- "<< std::endl;
-    // print(less);
-    // print(equal);
-    // print(more);
     
-    if(less.size() > 1) quick_sort(less, less_out);
-    else less_out = less;
-    if(more.size() > 1) quick_sort(more, more_out);
-    else more_out = more;
-    // in.clear();
-    for(auto &i : less_out){
-        out.push_back(i);
+    if(less.size() > 1) quick_sort(less);
+    if(more.size() > 1) quick_sort(more);
+    
+    int counter = 0;
+    for(auto &i : less){
+        in.at(counter) = i;
+        counter++;
     }
     for(auto &i : equal){
-        out.push_back(i);
+        in.at(counter) = i;
+        counter++;
     }
-    for(auto &i : more_out){
-        out.push_back(i);
-    }
-    // std::cout<< "out " ;
-    // print(out);
-    
+    for(auto &i : more){
+        in.at(counter) = i;
+        counter++;
+    }    
 }
 
 
@@ -244,7 +238,7 @@ int main() {
     
     std::vector<int> in = test_vector(10);
     std::vector<int> out;
-    quick_sort(in, out);
+    quick_sort(in);
     
     
 }
