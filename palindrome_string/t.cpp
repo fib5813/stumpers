@@ -4,12 +4,19 @@
 #include <cmath>
 #include <vector>
 #include <set>
+#include <stack>
 
 constexpr int size = 9;
 constexpr float R = 6356752.0F; // convert to meters
 constexpr float speed = 105*1000.0F/3600.0F; // convert to m/s
 constexpr float full_charge = 320000.0F; // convert to meters
 constexpr float pi_over_180 = (22.0F/7.0F)/180.0F;
+
+void print_path(std::vector<int> &path){ 
+    std::cout << "shortest path..." << std::endl;
+    for(auto &i: path) std::cout << i << " " ;
+    std::cout << std::endl;
+}
 
 void print_dist(std::map<int, std::pair<float, int>> &dist){
     std::cout << "node" << "  distance  " << "prev_node" << std::endl;
@@ -19,6 +26,10 @@ void print_dist(std::map<int, std::pair<float, int>> &dist){
 }
 
 
+void calculate_charging_time(std::vector<int> &path, std::map<std::string, int> &my_map, 
+                             std::array<row, size> &network2, std::vector<float> &charge_time){
+    
+}
 
 void update_connected_nodes_dist(int curr_node, std::map<int, std::pair<float, int>> &dist, float dist_from_src, std::array<std::array<float, size>, size>& graph){
     // update the distance of all nodes connected to current node. 
@@ -61,7 +72,7 @@ void initialize_status(std::array<bool, size> &visited, std::map<int, std::pair<
     std::cout << "initialized status..." << std::endl;
 }
 
-void find_shortest_path(int initial, int final, std::vector<int>& path, std::array<std::array<float, size>, size>& graph){
+void find_shortest_path(int initial, int final, std::vector<int> &path, std::array<std::array<float, size>, size>& graph){
     // path.push_back(initial);
     // std::array<std::pair<bool, int>, size> status{{std::pair<bool, int>(false, 0)}}; // status for visited and distance from initial
     // std::cout << "finding_shortest_path " << visited.at(4).second <<std::endl;
@@ -91,7 +102,7 @@ void find_shortest_path(int initial, int final, std::vector<int>& path, std::arr
         int new_node = find_new_node(dist, visited); 
         if(new_node == -1) {
             std::cout << "error2" << std::endl;
-            return;
+            // return;
         }
         
         it = dist.find(new_node);
@@ -100,7 +111,25 @@ void find_shortest_path(int initial, int final, std::vector<int>& path, std::arr
         std::cout << "finding path..." << std::endl;
     }
     
+    std::stack<int> rev_path;
+    rev_path.push(final);
+    int k = final;
+    // std::cout << "initial = " << initial << "  final = " << final << std::endl;
+    while(k!=initial) {
+        auto it = dist.find(k);
+        k = it->second.second;
+        rev_path.push(k);
+        // std::cout << " : " << rev_path.top();
+    }
+    std::cout << std::endl;
+    // rev_path.push(initial);
 
+    while(!rev_path.empty()) {
+        // std::cout << rev_path.top() << " " ;
+        path.push_back(rev_path.top());
+        rev_path.pop();
+    }
+    std::cout << std::endl;
 
     // path.push_back(final);
 }
@@ -140,23 +169,23 @@ graph =              {{{ { 0, 4, 0, 0, 0, 0, 0, 8, 0 } },
                        { { 0, 0, 4, 14, 10, 0, 2, 0, 0 } }, 
                        { { 0, 0, 0, 0, 0, 2, 0, 1, 6 } }, 
                        { { 8, 11, 0, 0, 0, 0, 1, 0, 7 } }, 
-                       { { 0, 0, 2, 0, 0, 0, 6, 7, 0 } } } };
+                       { { 0, 0, 2, 0, 0, 0, 6, 7, 0 } } } };   
 
 }
 
 void create_map(std::map<std::string, int> &my_map){
-    for(int i = 0; i < network.size(); i++){
-        my_map.insert({network.at(i).name, i});
+    for(int i = 0; i < network2.size(); i++){
+        my_map.insert({network2.at(i).name, i});
     }
 }
 
-std::array<row, size> network2; // = 
-// {{
-// {"Albany_NY", 40.710356, -73.819109, 131.0},{"Edison_NJ", 40.544595, -74.334113, 159.0},
-// {"Dayton_OH", 39.858702, -84.277027, 133.0},{"West_Wendover_NV", 40.738399, -114.058998, 106.0},
-// {"Salina_KS", 38.877342, -97.618699, 177.0},{"Glen_Allen_VA", 37.66976, -77.461414, 128.0},
-// {"Beaver_UT", 38.249149, -112.652524, 109.0},{"Pleasant_Prairie_WI", 42.518715, -87.950428, 144.0},
-// {"Independence_MO", 39.040814, -94.369265, 107.0},{"Redondo_Beach_CA", 33.894227, -118.367407, 114.0},
+std::array<row, size> network2= // = 
+{{
+{"Albany_NY", 40.710356, -73.819109, 131.0},{"Edison_NJ", 40.544595, -74.334113, 159.0},
+{"Dayton_OH", 39.858702, -84.277027, 133.0},{"West_Wendover_NV", 40.738399, -114.058998, 106.0},
+{"Salina_KS", 38.877342, -97.618699, 177.0},{"Glen_Allen_VA", 37.66976, -77.461414, 128.0},
+{"Beaver_UT", 38.249149, -112.652524, 109.0},{"Pleasant_Prairie_WI", 42.518715, -87.950428, 144.0},
+{"Independence_MO", 39.040814, -94.369265, 107.0}}};//,{"Redondo_Beach_CA", 33.894227, -118.367407, 114.0},
 // {"Yuma_AZ", 32.726686, -114.619093, 116.0},{"Milford_CT", 41.245823, -73.009059, 130.0},
 // {"Liverpool_NY", 43.102424, -76.187446, 138.0}
 // }};
@@ -198,9 +227,12 @@ int main(int argc, char** argv)
     std::vector<int> path{};
     find_shortest_path(initial, final, path, graph);
 
-
+    print_path(path);
 
     // calculate time = ()
+    // std::vector<float> charge_time = calculate_charging_time(path, my_map, network2);
+
+    // print_final_output(path, my_map, charge_time);
 
     return 0;
 }
