@@ -70,11 +70,12 @@ void calculate_charging_time(std::vector<int> &path, std::map<std::string, int> 
 
         // if(i != path.size()-1){
             //calculate charge time
-            float dist_to_charge = distance - remaining_miles;
+            float dist_to_charge = distance - remaining_miles + 1;
             float charge_rate = network.at(city2).rate;
-            charge_time = (dist_to_charge / charge_rate)/3600.0F;
+            charge_time = (dist_to_charge / (charge_rate*1000.0F));  // converted rate to m/s, time to hrs.
             // append values to trip_time
             trip_time.push_back(charge_time);
+            remaining_miles = 0;
             // std::cout << "city1 " << network.at(city1).name << 
             //    "  city2 " << network.at(city2).name << 
             //    "  distance to charge " << dist_to_charge <<
