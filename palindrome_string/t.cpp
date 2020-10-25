@@ -21,7 +21,7 @@ struct node{
     node(float dist_val, int prev_node_val){distance_from_src = dist_val; prev_node = prev_node_val;}
 };
 
-void print_graph(const std::array<std::array<int, size> size> &graph){
+void print_graph(const std::array<std::array<int, size>, size> &graph){
     for(int i = 0; i < size; i++){
         for(int j = 0; j < size; j++) std::cout << graph.at(i).at(j) << " " ;
         std::cout << std::endl;
@@ -35,11 +35,11 @@ void print_vector(const std::vector<T> &path){
     std::cout << std::endl;
 }
 
-void print_dist(const std::map<int, const std::pair<float, int>> &dist){
-    for(auto &i : dist){
-        std::cout << i.first << " " << i.second.first << " " << i.second.second <<  std::endl;
-    }
-}
+// void print_dist(const std::map<int, const std::pair<float, int>> &dist){
+//     for(auto &i : dist){
+//         std::cout << i.first << " " << i.second.first << " " << i.second.second <<  std::endl;
+//     }
+// }
 
 void print_final_output(const std::vector<int>&path, const std::vector<float>&trip_time){
     std::cout << network.at(path.at(0)).name << ", " ;
@@ -50,7 +50,7 @@ void print_final_output(const std::vector<int>&path, const std::vector<float>&tr
 }
 
 
-void calculate_charging_time(const std::vector<int> &path, 
+void calculate_charging_time(const std::vector<int> &path,
                              const std::array<std::array<float, size>, size> &graph,
                              std::vector<float> &trip_time){
 
@@ -68,7 +68,7 @@ void calculate_charging_time(const std::vector<int> &path,
         curr_city = next_city;
         next_city = path.at(i);
         distance = graph.at(curr_city).at(next_city);
-        
+
         if(remaining_miles > distance) std::cout << "why did you get here dummy!! " << std::endl;
 
         float dist_to_charge = distance - remaining_miles;
@@ -76,22 +76,22 @@ void calculate_charging_time(const std::vector<int> &path,
         remaining_miles = 0;  // as in this scheme we are only charging enough to get to the next charger
         float charge_rate = network.at(curr_city).rate;
         charge_time = (dist_to_charge / (charge_rate*1000.0F));  // converted rate to m/s, time to hrs.
-        
+
         // append values to trip_time
         trip_time.push_back(charge_time);
     }
 }
 
-void update_connected_nodes_dist(const int curr_node, 
+void update_connected_nodes_dist(const int curr_node,
                                  const float dist_from_src,
-                                 std::map<int, node> &dist, 
+                                 std::map<int, node> &dist,
                                  const std::array<std::array<float, size>, size>& graph){
     // update the distance of all nodes connected to current node.
     // connections given in graph,
     // distances to be updated in dist
 
     std::array<float, size> list = graph.at(curr_node);
-    
+
     // go through components connected to curr_node, if weight!=max_float, update weight in "dist" map
     for(int i = 0; i < size; i++){
         if(list.at(i) == 0) continue;  // this is the invalid value we set when creating the graph. meaning this connection doesnt exist.
@@ -107,7 +107,7 @@ void update_connected_nodes_dist(const int curr_node,
 }
 
 
-int find_new_node(const std::map<int, std::pair<float, int>> &dist, const std::array<bool, size> &visited){
+int find_new_node(const std::map<int, node> &dist, const std::array<bool, size> &visited){
     int out = -1;
     float min_dist = std::numeric_limits<float>::max();
     for(auto it = dist.begin(); it != dist.end(); it++){
@@ -142,10 +142,10 @@ void find_shortest_path(const int initial, const int final_node, std::vector<int
     // make distance of first node from itself as 0, previous node as invalid.
     if(it!= dist.end()){ it->second = node(0.0F, -1);}
     else {std::cout<< "error 1" << std::endl; return;}
-    
+
     // start finding the shortest path by visiting every node
     for(int count = 0; count < size; count++){
-        
+
         // begin at the start node, set the distance from node to itself as 0
         int curr_node = it->first;
         dist_from_src = it->second.distance_from_src;
@@ -154,10 +154,10 @@ void find_shortest_path(const int initial, const int final_node, std::vector<int
         // update distance of connected nodes
         update_connected_nodes_dist(curr_node, dist_from_src, dist, graph);
         int new_node = find_new_node(dist, visited);
- 
+
         it = dist.find(new_node);
     }
-    
+
     // retrace the path and add the path to the output vector.
     std::stack<int> rev_path;
     rev_path.push(final_node);
@@ -234,12 +234,12 @@ int main(int argc, char** argv)
 
     int initial = my_map.find(initial_charger)->second;
     int final_node = my_map.find(goal_charger)->second;
-    if(initial == my_map.end() || final_node == my_map.end()){std::cout << "Cities not found, no path found";return 0;}
-    
+    if(initial == my_map.end()->second || final_node == my_map.end()->second){std::cout << "Cities not found, no path found";return 0;}
+
     // find shortest path between the initial and final nodes, return path as vector of node ids
     std::vector<int> path{};
     find_shortest_path(initial, final_node, path, graph);
-    
+
     if(path.size() ==0){std::cout << "no path found";return 0;}
 
     // calculate charging time
