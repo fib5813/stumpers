@@ -21,7 +21,7 @@ struct node{
     node(float dist_val, int prev_node_val){distance_from_src = dist_val; prev_node = prev_node_val;}
 };
 
-void print_graph(std::array<std::array<int, size> size> &graph){
+void print_graph(const std::array<std::array<int, size> size> &graph){
     for(int i = 0; i < size; i++){
         for(int j = 0; j < size; j++) std::cout << graph.at(i).at(j) << " " ;
         std::cout << std::endl;
@@ -30,18 +30,18 @@ void print_graph(std::array<std::array<int, size> size> &graph){
 }
 
 template <class T>
-void print_vector(std::vector<T> &path){
+void print_vector(const std::vector<T> &path){
     for(auto &i: path) std::cout << i << " " ;
     std::cout << std::endl;
 }
 
-void print_dist(std::map<int, std::pair<float, int>> &dist){
+void print_dist(const std::map<int, const std::pair<float, int>> &dist){
     for(auto &i : dist){
         std::cout << i.first << " " << i.second.first << " " << i.second.second <<  std::endl;
     }
 }
 
-void print_final_output(std::vector<int>&path, std::vector<float>&trip_time){
+void print_final_output(const std::vector<int>&path, const std::vector<float>&trip_time){
     std::cout << network.at(path.at(0)).name << ", " ;
     for(int i = 0; i< trip_time.size(); i++){
         std::cout <<network.at(path.at(i+1)).name << ", " <<  trip_time.at(i) << ", " ;
@@ -58,13 +58,7 @@ void calculate_charging_time(const std::vector<int> &path,
     int curr_city = path.at(0);
     int next_city = path.at(1);
     float distance = graph.at(curr_city).at(next_city);
-    // float travel_time = (distance / speed) / 3600.0F; // time in sec, converted to hrs
-    // trip_time.push_back(travel_time);
     float charge_time;
-    // std::cout << "curr_city " << network.at(curr_city).name <<
-    //            "  next_city " << network.at(next_city).name <<
-    //            "  distance " << distance <<
-    //            "  travel time " << travel_time << std::endl;
     float prev_mileage = mileage;
     float remaining_miles = prev_mileage - distance;
 
@@ -74,14 +68,7 @@ void calculate_charging_time(const std::vector<int> &path,
         curr_city = next_city;
         next_city = path.at(i);
         distance = graph.at(curr_city).at(next_city);
-        // if(distance > mileage){std::cout << "error4 : " << network.at(curr_city).name << " " << network.at(next_city).name << std::endl; return;}
-        // travel_time = (distance / speed)/3600.0F;
-        // std::cout << "curr_city " << network.at(curr_city).name <<
-        //        "  next_city " << network.at(next_city).name <<
-        //        "  distance " << distance <<
-        //        "  travel time " << travel_time <<
-        //        "  remaining miles " << remaining_miles;
-
+        
         if(remaining_miles > distance) std::cout << "why did you get here dummy!! " << std::endl;
 
         float dist_to_charge = distance - remaining_miles;
@@ -92,13 +79,7 @@ void calculate_charging_time(const std::vector<int> &path,
         
         // append values to trip_time
         trip_time.push_back(charge_time);
-            std::cout << "  charge rate " << charge_rate <<
-            "  distance to charge " << dist_to_charge <<
-            "  charge time " << charge_time << std::endl;
-
     }
-
-
 }
 
 void update_connected_nodes_dist(const int curr_node, 
