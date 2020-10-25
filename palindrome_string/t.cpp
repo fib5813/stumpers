@@ -12,6 +12,12 @@ constexpr float speed = 105*1000.0F/3600.0F; // convert to m/s
 constexpr float mileage = 320000.0F; // convert to meters
 constexpr float pi_over_180 = (22.0F/7.0F)/180.0F;
 
+struct node{
+    int id;
+    float distance_from_src;
+    int prev_node;
+};
+
 void print_graph(std::array<std::array<int, size> size> &graph){
     for(int i = 0; i < size; i++){
         for(int j = 0; j < size; j++) std::cout << graph.at(i).at(j) << " " ;
@@ -133,7 +139,7 @@ void initialize_status(std::array<bool, size> &visited, std::map<int, std::pair<
     // std::cout << "initialized status..." << std::endl;
 }
 
-void find_shortest_path(int initial, int final, std::vector<int> &path, std::array<std::array<float, size>, size>& graph){
+void find_shortest_path(int initial, int final_node, std::vector<int> &path, std::array<std::array<float, size>, size>& graph){
 
     std::array<bool, size> visited;
     std::map<int, std::pair<float, int>> dist; // id, min_distance, previous node
@@ -164,8 +170,8 @@ void find_shortest_path(int initial, int final, std::vector<int> &path, std::arr
         it = dist.find(new_node);
     }
     std::stack<int> rev_path;
-    rev_path.push(final);
-    int k = final;
+    rev_path.push(final_node);
+    int k = final_node;
     auto it1 = dist.find(k);
     int temp = it1->second.second;
     if(temp == -2){std::cout << "No path found" << std::endl; return;}
@@ -184,7 +190,7 @@ void find_shortest_path(int initial, int final, std::vector<int> &path, std::arr
 }
 
 
-float calculate_great_circle_distance(row &charger1, row &charger2){
+float calculate_great_circle_distance(const row &charger1, const row &charger2){
     float dist = 0.0F;
     // formula, code ref: https://www.movable-type.co.uk/scripts/latlong.html
     float dlon = charger2.lon * pi_over_180 - charger1.lon*pi_over_180;
@@ -196,18 +202,17 @@ float calculate_great_circle_distance(row &charger1, row &charger2){
 }
 
 
-void create_graph(std::array<row, size> &network, std::array<std::array<float, size>, size>  &graph){
+void create_graph(std::array<std::array<float, size>, size> &graph){
 
     // TODO: optimize here to not calculate each value twice.
     for(int i = 0; i < graph.at(0).size(); i++){
         for(int j = 0; j < graph.at(0).size(); j++){
             float dist = calculate_great_circle_distance(network.at(i), network.at(j));
-            if(dist < mileage) graph.at(i).at(j) = dist;
+            if(dist < mileage) graph.at(i).at(j) = dist;  // connection established
             else graph.at(i).at(j) = 0; // no connection
             // std::cout << " " << graph.at(i).at(j) << " ";
         }
     }
-
 }
 
 void create_map(std::map<std::string, int> &my_map){
@@ -229,25 +234,25 @@ int main(int argc, char** argv)
     std::string initial_charger = argv[1];
     std::string goal_charger = argv[2];
 
+    // create map to facilitate looking up chargers based on names.
     std::map<std::string, int> my_map ;
     create_map(my_map);
 
     // preprocess the network to create a weighted graph
     std::array<std::array<float, size>, size> graph{{0}};
-    create_graph(network, graph);
+    create_graph(graph);
     // std::cout << "Created an adjacency matrix..." << std::endl;
-
 
     // std::vector<<name, id_in_array>> = find shortest path between the 2 given nodes.
     int initial = my_map.find(initial_charger)->second;
-    int final = my_map.find(goal_charger)->second;
+    int final_node = my_map.find(goal_charger)->second;
+    if(initial == my_map.end() || final_node == my_map.end()){std::cout << "Cities not found, no path found";return 0;}
+    
     std::vector<int> path{};
-    find_shortest_path(initial, final, path, graph);
+    find_shortest_path(initial, final_node, path, graph);
     if(path.size() ==0){std::cout << "no path found";return 0;}
     // print_vector(path);
 
-
-    //////////////////////////////////// cutoff to test out shortest path algo//////////////////////
     // calculate time = ()
     std::vector<float> trip_time{};
     calculate_charging_time(path, my_map, network, graph, trip_time);
