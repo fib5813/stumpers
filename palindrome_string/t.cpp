@@ -13,7 +13,7 @@ constexpr float mileage = 320000.0F; // convert to meters
 constexpr float pi_over_180 = (22.0F/7.0F)/180.0F;
 
 template <class T>
-void print_vector(std::vector<T> &path){ 
+void print_vector(std::vector<T> &path){
     // std::cout << "shortest path..." << path.size()<<  std::endl;
     for(auto &i: path) std::cout << i << " " ;
     std::cout << std::endl;
@@ -22,7 +22,7 @@ void print_vector(std::vector<T> &path){
 void print_dist(std::map<int, std::pair<float, int>> &dist){
     // std::cout << "node" << "  distance  " << "prev_node" << std::endl;
     for(auto &i : dist){
-        std::cout << i.first << " " << i.second.first << " " << i.second.second <<  std::endl;  
+        std::cout << i.first << " " << i.second.first << " " << i.second.second <<  std::endl;
     }
 }
 
@@ -37,10 +37,10 @@ void print_final_output(std::vector<int>&path, std::vector<float>&trip_time){
 }
 
 
-void calculate_charging_time(std::vector<int> &path, std::map<std::string, int> &my_map, 
-                             std::array<row, size> &network,  std::array<std::array<float, size>, size>& graph, 
+void calculate_charging_time(std::vector<int> &path, std::map<std::string, int> &my_map,
+                             std::array<row, size> &network,  std::array<std::array<float, size>, size>& graph,
                              std::vector<float> &trip_time){
-    
+
     // iterate through map, find time required to charge at each station to reach next station
     int city1 = path.at(0);
     int city2 = path.at(1);
@@ -48,51 +48,59 @@ void calculate_charging_time(std::vector<int> &path, std::map<std::string, int> 
     float travel_time = (distance / speed) / 3600.0F; // time in sec, converted to hrs
     // trip_time.push_back(travel_time);
     float charge_time;
-    // std::cout << "city1 " << network.at(city1).name << 
-    //            "  city2 " << network.at(city2).name << 
-    //            "  distance " << distance << 
-    //            "  travel time " << travel_time << std::endl; 
-        
-    float remaining_miles = mileage - distance;
+    std::cout << "city1 " << network.at(city1).name <<
+               "  city2 " << network.at(city2).name <<
+               "  distance " << distance <<
+               "  travel time " << travel_time << std::endl;
+    float prev_mileage = mileage;
+    float remaining_miles = prev_mileage - distance;
 
     for(int i = 2; i < path.size(); i++){
-        
+
         // caculate travel time for the next leg
         city1 = city2;
         city2 = path.at(i);
         distance = graph.at(city1).at(city2);
         if(distance > mileage){std::cout << "error4 : " << network.at(city1).name << " " << network.at(city2).name << std::endl; return;}
         travel_time = (distance / speed)/3600.0F;
-        // std::cout << "city1 " << network.at(city1).name << 
-        //        "  city2 " << network.at(city2).name << 
-        //        "  distance " << distance << 
-        //        "  travel time " << travel_time << std::endl; 
+        std::cout << "city1 " << network.at(city1).name <<
+               "  city2 " << network.at(city2).name <<
+               "  distance " << distance <<
+               "  travel time " << travel_time <<
+               "  remaining miles " << remaining_miles;
 
         // if(i != path.size()-1){
             //calculate charge time
-            float dist_to_charge = distance - remaining_miles + 1;
-            float charge_rate = network.at(city2).rate;
+            if(remaining_miles > distance) std::cout << "why did you get here dummy!! " << std::endl;
+
+            float dist_to_charge = distance - remaining_miles;
+            prev_mileage = dist_to_charge + remaining_miles;
+            remaining_miles = 0;
+            float charge_rate = network.at(city1).rate;
             charge_time = (dist_to_charge / (charge_rate*1000.0F));  // converted rate to m/s, time to hrs.
             // append values to trip_time
             trip_time.push_back(charge_time);
-            remaining_miles = 0;
-            // std::cout << "city1 " << network.at(city1).name << 
-            //    "  city2 " << network.at(city2).name << 
-            //    "  distance to charge " << dist_to_charge <<
-            //    "  remaining miles " << remaining_miles <<  
-            //    "  charge time " << charge_time << std::endl; 
-        
+            // remaining_miles = 0;
+            // std::cout << "city1 " << network.at(city1).name <<
+            //    "  city2 " << network.at(city2).name <<
+               std::cout << "  charge rate " << charge_rate <<
+               "  distance to charge " << dist_to_charge <<
+            //    "  remaining miles " << remaining_miles <<
+            //    "  prev_mileage " << prev_mileage <<
+               "  charge time " << charge_time << std::endl;
+
         // }
+        // std::cout << std::endl;
 
         // trip_time.push_back(travel_time);
     }
 
-    
+
 }
 
 void update_connected_nodes_dist(int curr_node, std::map<int, std::pair<float, int>> &dist, float dist_from_src, std::array<std::array<float, size>, size>& graph){
-    // update the distance of all nodes connected to current node. 
-    // connections given in graph, 
+    // update the distance of all nodes connected to current node.
+    // connections given in graph,
     // distances to be updated in dist
 
     std::array<float, size> list = graph.at(curr_node);
@@ -102,7 +110,7 @@ void update_connected_nodes_dist(int curr_node, std::map<int, std::pair<float, i
         if(list.at(i) == 0) continue;
         auto it = dist.find(i);
         if(it == dist.end()){std::cout << "error3" << std::endl; return;}
-        
+
         float new_dist = dist_from_src + list.at(i);
         // if(new_dist > mileage) new_dist = std::numeric_limits<float>::max();
         if(new_dist < it->second.first) {
@@ -140,15 +148,15 @@ void find_shortest_path(int initial, int final, std::vector<int> &path, std::arr
     // std::cout << "finding_shortest_path " << visited.at(4).second <<std::endl;
     std::array<bool, size> visited;
     std::map<int, std::pair<float, int>> dist; // id, min_distance, previous node
-    
+
     initialize_status(visited, dist);
-    
+
     // start finding the shortest path
     // while(visited.find(true) != visited.end()){
     // visit every node
     float dist_from_src = 0;
     auto it = dist.find(initial);
-    
+
     if(it!= dist.end()){ it->second = std::make_pair(0, -1);}
     else {std::cout<< "error 1" << std::endl; return;}
     // print_dist(dist);
@@ -158,15 +166,15 @@ void find_shortest_path(int initial, int final, std::vector<int> &path, std::arr
         dist_from_src = it->second.first;
         // int prev_node = it->second.second;
         visited.at(curr_node) = true;
-        
+
         // update distance of connected nodes
         update_connected_nodes_dist(curr_node, dist, dist_from_src, graph);
-        int new_node = find_new_node(dist, visited); 
+        int new_node = find_new_node(dist, visited);
         if(new_node == -1) {
             // std::cout << "error2" << std::endl;
             // return;
         }
-        
+
         it = dist.find(new_node);
         // it->second.second = curr_node;
         // print_dist(dist);
@@ -206,7 +214,7 @@ void find_shortest_path(int initial, int final, std::vector<int> &path, std::arr
 
 float calculate_great_circle_distance(row &charger1, row &charger2){
     float dist = 0.0F;
-    // formula ref: https://www.movable-type.co.uk/scripts/gis-faq-5.1.html 
+    // formula ref: https://www.movable-type.co.uk/scripts/gis-faq-5.1.html
     // https://www.movable-type.co.uk/scripts/latlong.html
     float dlon = charger2.lon * pi_over_180 - charger1.lon*pi_over_180;
     float dlat = charger2.lat*pi_over_180 - charger1.lat*pi_over_180;
@@ -219,7 +227,7 @@ float calculate_great_circle_distance(row &charger1, row &charger2){
 
 
 void create_graph(std::array<row, size> &network, std::array<std::array<float, size>, size>  &graph){
-    
+
     // TODO: optimize here to not calculate each value twice.
     for(int i = 0; i < graph.at(0).size(); i++){
         for(int j = 0; j < graph.at(0).size(); j++){
@@ -227,19 +235,19 @@ void create_graph(std::array<row, size> &network, std::array<std::array<float, s
             float dist = calculate_great_circle_distance(network.at(i), network.at(j));
             // graph.at(i).at(j) = dist;
             if(dist < mileage) graph.at(i).at(j) = dist;
-            else graph.at(i).at(j) = 0; 
+            else graph.at(i).at(j) = 0;
             // std::cout << " " << graph.at(i).at(j) << " ";
         }
     }
-// graph =              {{{ { 0, 4, 0, 0, 0, 0, 0, 8, 0 } }, 
-//                        { { 4, 0, 8, 0, 0, 0, 0, 11, 0 } }, 
-//                        { { 0, 8, 0, 7, 0, 4, 0, 0, 2 } }, 
-//                        { { 0, 0, 7, 0, 9, 14, 0, 0, 0 } }, 
-//                        { { 0, 0, 0, 9, 0, 10, 0, 0, 0 } }, 
-//                        { { 0, 0, 4, 14, 10, 0, 2, 0, 0 } }, 
-//                        { { 0, 0, 0, 0, 0, 2, 0, 1, 6 } }, 
-//                        { { 8, 11, 0, 0, 0, 0, 1, 0, 7 } }, 
-//                        { { 0, 0, 2, 0, 0, 0, 6, 7, 0 } } } };   
+// graph =              {{{ { 0, 4, 0, 0, 0, 0, 0, 8, 0 } },
+//                        { { 4, 0, 8, 0, 0, 0, 0, 11, 0 } },
+//                        { { 0, 8, 0, 7, 0, 4, 0, 0, 2 } },
+//                        { { 0, 0, 7, 0, 9, 14, 0, 0, 0 } },
+//                        { { 0, 0, 0, 9, 0, 10, 0, 0, 0 } },
+//                        { { 0, 0, 4, 14, 10, 0, 2, 0, 0 } },
+//                        { { 0, 0, 0, 0, 0, 2, 0, 1, 6 } },
+//                        { { 8, 11, 0, 0, 0, 0, 1, 0, 7 } },
+//                        { { 0, 0, 2, 0, 0, 0, 6, 7, 0 } } } };
 
 }
 
@@ -249,7 +257,7 @@ void create_map(std::map<std::string, int> &my_map){
     }
 }
 
-// std::array<row, size> network= // = 
+// std::array<row, size> network= // =
 // {{
 // {"Albany_NY", 42.710356, -73.819109, 131.0},{"Edison_NJ", 40.544595, -74.334113, 159.0},
 // {"Dayton_OH", 39.858702, -84.277027, 133.0},{"West_Wendover_NV", 40.738399, -114.058998, 106.0},
@@ -264,10 +272,10 @@ int main(int argc, char** argv)
 {
     if (argc != 3)
     {
-        std::cout << "Error: requires initial and final supercharger names" << std::endl;        
+        std::cout << "Error: requires initial and final supercharger names" << std::endl;
         return -1;
     }
-    
+
     // std::cout << "Starting calculations..." << std::endl;
     std::string initial_charger = argv[1];
     std::string goal_charger = argv[2];
