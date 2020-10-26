@@ -17,7 +17,7 @@ struct cost{
     float charge;
     // float charge_col;
 
-    cost(){ travel = 0; charge_row = 0;}
+    cost(){ travel = 0;}
 
 };
 struct node{
@@ -29,8 +29,8 @@ struct node{
 
     node(){distance_from_src = std::numeric_limits<float>::max(); remaining_miles = 0; prev_node = -2; charge_time = 0;}
     node(float dist_val, float rem_miles, int prev_node_val, float ch_time){
-        distance_from_src = dist_val; 
-        remaining_miles = rem_miles; 
+        distance_from_src = dist_val;
+        remaining_miles = rem_miles;
         prev_node = prev_node_val;
         charge_time = ch_time;}
 };
@@ -65,7 +65,7 @@ void print_final_output(const std::vector<int>&path, const std::vector<float>&tr
 
 
 float calculate_travel_cost(int i, int j, float& dist){
-    
+
     float travel_cost = 0;
     dist = calculate_great_circle_distance(network.at(i), network.at(j));
     if(dist < mileage) travel_cost = dist/speed;
@@ -129,7 +129,7 @@ void update_connected_nodes_dist(const int curr_node,
         auto it = dist.find(i);
         if(it == dist.end()){std::cout << "error3" << std::endl; return;}
         float charging_cost = 0, new_cost;
-        // if this is first node, dont add charging cost. 
+        // if this is first node, dont add charging cost.
         if(remaining_miles == mileage){
             new_cost = cost_from_src + list.at(i).travel;
             curr_remaining_dist = mileage - list.at(i).travel*speed;
@@ -146,7 +146,7 @@ void update_connected_nodes_dist(const int curr_node,
             new_cost = cost_from_src + list.at(i).travel + charging_cost;
             curr_remaining_dist = 0;
         }
-        
+
         if(new_cost < it->second.distance_from_src) {
             it->second.distance_from_src = new_cost;
             it->second.prev_node = curr_node;
@@ -258,7 +258,7 @@ void create_graph(std::array<std::array<cost, size>, size> &graph){
             }
             graph.at(i).at(j).travel = travel_cost;
             graph.at(i).at(j).charge = charge_row;
-            
+
             // float dist = calculate_great_circle_distance(network.at(i), network.at(j));
             // if(dist < mileage) graph.at(i).at(j) = dist;  // connection established
             // else graph.at(i).at(j) = 0; // no connection
@@ -306,7 +306,7 @@ int main(int argc, char** argv)
     if(path.size() ==0){std::cout << "no path found";return 0;}
 
     // calculate charging time
-    
+
     // calculate_charging_time(path, graph, trip_time);
 
     print_final_output(path, trip_time);
