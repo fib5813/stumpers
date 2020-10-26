@@ -223,6 +223,11 @@ int main(int argc, char** argv)
     std::string initial_charger = argv[1];
     std::string goal_charger = argv[2];
 
+    if(initial_charger == goal_charger){
+        std::cout << initial_charger << ", " << goal_charger<<std::endl;
+        return 0;
+    }
+
     // create map to facilitate looking up chargers based on names.
     std::map<std::string, int> my_map ;
     create_map(my_map);
@@ -231,10 +236,12 @@ int main(int argc, char** argv)
     std::array<std::array<float, size>, size> graph{{0}};
     create_graph(graph);
     // std::cout << "Created an adjacency matrix..." << std::endl;
+    auto it1 = my_map.find(initial_charger);
+    auto it2 = my_map.find(goal_charger);
+    if(it1 == my_map.end() || it2 == my_map.end()){std::cout << "Cities not found, no path found";return 0;}
 
-    int initial = my_map.find(initial_charger)->second;
-    int final_node = my_map.find(goal_charger)->second;
-    if(initial == my_map.end()->second || final_node == my_map.end()->second){std::cout << "Cities not found, no path found";return 0;}
+    int initial = it1->second;
+    int final_node = it2->second;
 
     // find shortest path between the initial and final nodes, return path as vector of node ids
     std::vector<int> path{};
